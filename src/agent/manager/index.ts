@@ -1,5 +1,6 @@
 import { createAgent } from '@agentuity/runtime';
-import { generateObject, generateText, Output } from 'ai';
+import { generateText, Output } from 'ai';
+import { type ManagerRequest, ManagerRequestSchema } from '../../types';
 import { groq } from '@ai-sdk/groq';
 import { s } from '@agentuity/schema';
 import { z } from 'zod';
@@ -10,23 +11,10 @@ import {
 import { errorResponse } from '../../utils/response-utils';
 import type { Campaign } from '../../types';
 
-const inputSchema = s.object({
-      topic: s.string(),
-      description: s.string().optional().nullable(),
-      publishDate: s.string().optional().nullable(),
-      domain: s.string().optional().nullable()
-})
-
-type InputType = {
-  topic: string,
-  description?: string,
-  publishDate?: string,
-  domain?: string
-}
-
 const agent = createAgent('chat', {
   schema: {
-    input: inputSchema,
+    input: ManagerRequestSchema,
+    // TODO - convert this to a type.
     output: s.object({
       existingCampaigns: s.array(s.any()).optional(),
       message: s.string().optional(),
@@ -119,7 +107,7 @@ const agent = createAgent('chat', {
  * Enrich request data with AI extraction if needed
  */
 async function enrichRequestData(
-  data: InputType,
+  data: ManagerRequest,
   ctx: any,
 ) {
   // If we already have structured data, return it

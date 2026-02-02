@@ -1,5 +1,5 @@
-import type { AgentContext } from "@agentuity/sdk";
 import type { Campaign } from "../types";
+import type { AgentContext, AppState } from "@agentuity/runtime";
 
 // Constants
 const CAMPAIGNS_STORE = "campaigns";
@@ -21,11 +21,11 @@ function isValidId(id: unknown): id is string {
 /**
  * Safe access to the campaign index
  */
-async function getCampaignIndex(ctx: AgentContext): Promise<string[]> {
+async function getCampaignIndex(ctx: AgentContext<any, unknown, AppState>): Promise<string[]> {
 	const result = await ctx.kv.get(CAMPAIGNS_INDEX_STORE, CAMPAIGNS_INDEX_KEY);
 
 	// Type handling for the JSON data
-	const indexData = result?.data?.json as unknown;
+	const indexData = result.data as unknown;
 	const typedIndex = indexData as CampaignIndex | undefined;
 
 	return typedIndex?.campaignIds?.filter(isValidId) || [];
@@ -35,7 +35,7 @@ async function getCampaignIndex(ctx: AgentContext): Promise<string[]> {
  * Updates the campaign index with a new ID
  */
 async function updateCampaignIndex(
-	ctx: AgentContext,
+	ctx: AgentContext<any, unknown, AppState>,
 	campaignId: string,
 ): Promise<void> {
 	if (!isValidId(campaignId)) {
@@ -59,7 +59,7 @@ async function updateCampaignIndex(
  * Get a campaign by ID
  */
 export async function getCampaign(
-	ctx: AgentContext,
+	ctx: AgentContext<any, unknown, AppState>,
 	id: string,
 ): Promise<Campaign | null> {
 	if (!isValidId(id)) {
@@ -71,15 +71,14 @@ export async function getCampaign(
 		const result = await ctx.kv.get(CAMPAIGNS_STORE, id);
 
 		// Handle type conversion properly
-		const campaignData = result?.data?.json() as unknown;
+		const campaignData = result?.data as unknown;
 		const campaign = campaignData as Campaign | undefined;
 
 		if (!campaign) {
 			ctx.logger.debug("No campaign found with ID: %s", id);
 			return null;
 		}
-
-
+		
 		return campaign;
 	} catch (error) {
 		ctx.logger.error("Failed to get campaign %s: %s", id, error);
@@ -91,7 +90,7 @@ export async function getCampaign(
  * Save a campaign
  */
 export async function saveCampaign(
-	ctx: AgentContext,
+	ctx: AgentContext<any, unknown, AppState>,
 	campaign: Campaign,
 ): Promise<boolean> {
 	if (!campaign || !isValidId(campaign.id)) {
@@ -120,7 +119,7 @@ export async function saveCampaign(
 /**
  * List all campaigns
  */
-export async function listCampaigns(ctx: AgentContext): Promise<Campaign[]> {
+export async function listCampaigns(ctx: AgentContext<any, unknown, AppState>): Promise<Campaign[]> {
 	try {
 		const campaignIds = await getCampaignIndex(ctx);
 
@@ -146,7 +145,7 @@ export async function listCampaigns(ctx: AgentContext): Promise<Campaign[]> {
  * Find campaigns by topic (case-insensitive partial match)
  */
 export async function findCampaignsByTopic(
-	ctx: AgentContext,
+	ctx: AgentContext<any, unknown, AppState>,
 	topic: string,
 ): Promise<Campaign[]> {
 	if (!topic?.trim()) {
@@ -179,7 +178,7 @@ export async function findCampaignsByTopic(
  * Create a new campaign
  */
 export async function createCampaign(
-	ctx: AgentContext,
+	ctx: AgentContext<any, unknown, AppState>,
 	topic: string,
 	description?: string,
 	publishDate?: string,
@@ -218,7 +217,7 @@ export async function createCampaign(
  * Update a campaign's status
  */
 export async function updateCampaignStatus(
-	ctx: AgentContext,
+	ctx: AgentContext<any, unknown, AppState>,
 	campaignId: string,
 	status: Campaign["status"],
 ): Promise<Campaign | null> {

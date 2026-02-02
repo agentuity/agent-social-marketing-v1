@@ -1,3 +1,4 @@
+import { z } from 'zod'
 /**
  * Shared interfaces for Content Marketing Agent Swarm
  */
@@ -5,120 +6,143 @@
 /**
  * Campaign status
  */
-export type CampaignStatus =
-	| "planning"
-	| "researching"
-	| "writing"
-	| "scheduling"
-	| "active"
-	| "completed";
+export const CampaignStatusSchema = z.enum([
+	"planning",
+	"researching",
+	"writing",
+	"scheduling",
+	"active",
+	"completed",
+]);
+
+export type CampaignStatus = z.infer<typeof CampaignStatusSchema>;
 
 /**
  * Research results from the Researcher Agent
  */
-export interface ResearchResults {
-	title: string;
-	description: string;
-	longFormDescription: string;
-	tags: string[];
-	keyInsights: string[];
-	sources: string[];
-}
+export const ResearchResultsSchema = z.object({
+	title: z.string(),
+	description: z.string(),
+	longFormDescription: z.string(),
+	tags: z.array(z.string()),
+	keyInsights: z.array(z.string()),
+	sources: z.array(z.string()),
+});
+
+export type ResearchResults = z.infer<typeof ResearchResultsSchema>;
 
 /**
  * Social media post
  */
-export interface Post {
-	platform: "linkedin" | "twitter";
-	content: string;
-	media?: string[];
-	scheduledDate?: string; // ISO string format
-	typefullyId?: string;
-}
+export const PostSchema = z.object({
+	platform: z.enum(["linkedin", "twitter"]),
+	content: z.string(),
+	media: z.array(z.string()).optional(),
+	scheduledDate: z.string().optional(),
+	typefullyId: z.string().optional(),
+});
+
+export type Post = z.infer<typeof PostSchema>;
 
 /**
  * Twitter thread
  */
-export interface Thread {
-	tweets: Post[];
-	scheduledDate?: string; // ISO string format
-	typefullyId?: string;
-}
+export const ThreadSchema = z.object({
+	tweets: z.array(PostSchema),
+	scheduledDate: z.string().optional(),
+	typefullyId: z.string().optional(),
+});
+
+export type Thread = z.infer<typeof ThreadSchema>;
 
 /**
  * Campaign content created by the Copywriter Agent
  */
-export interface CampaignContent {
-	linkedInPosts: Post[];
-	twitterThreads: Thread[];
-}
+export const CampaignContentSchema = z.object({
+	linkedInPosts: z.array(PostSchema),
+	twitterThreads: z.array(ThreadSchema),
+});
+
+export type CampaignContent = z.infer<typeof CampaignContentSchema>;
 
 /**
  * Scheduling information for Typefully
  */
-export interface SchedulingInfo {
-	typefullyScheduleId?: string;
-	scheduledPosts: {
-		postId: string;
-		typefullyId: string;
-		scheduledDate: string; // ISO string format
-		status: "draft" | "scheduled" | "published" | "failed";
-	}[];
-}
+export const SchedulingInfoSchema = z.object({
+	typefullyScheduleId: z.string().optional(),
+	scheduledPosts: z.array(z.object({
+		postId: z.string(),
+		typefullyId: z.string(),
+		scheduledDate: z.string(),
+		status: z.enum(["draft", "scheduled", "published", "failed"]),
+	})),
+});
+
+export type SchedulingInfo = z.infer<typeof SchedulingInfoSchema>;
 
 /**
  * Campaign object for the Content Marketing Agent Swarm
  */
-export interface Campaign {
-	id: string;
-	topic: string;
-	description?: string;
-	publishDate?: string; // ISO string format
-	status: CampaignStatus;
-	research?: ResearchResults;
-	content?: CampaignContent;
-	schedulingInfo?: SchedulingInfo;
-	createdAt: string; // ISO string format
-	updatedAt: string; // ISO string format
-}
+export const CampaignSchema = z.object({
+	id: z.string(),
+	topic: z.string(),
+	description: z.string().optional(),
+	publishDate: z.string().optional(),
+	status: CampaignStatusSchema,
+	research: ResearchResultsSchema.optional(),
+	content: CampaignContentSchema.optional(),
+	schedulingInfo: SchedulingInfoSchema.optional(),
+	createdAt: z.string(),
+	updatedAt: z.string(),
+});
+
+export type Campaign = z.infer<typeof CampaignSchema>;
 
 /**
  * Request to the Manager Agent
  */
-export interface ManagerRequest {
-	topic: string;
-	description?: string;
-	publishDate?: string; // ISO string format
-	domain?: string;
-}
+export const ManagerRequestSchema = z.object({
+	topic: z.string(),
+	description: z.string().optional(),
+	publishDate: z.string().optional(),
+	domain: z.string().optional(),
+});
+
+export type ManagerRequest = z.infer<typeof ManagerRequestSchema>;
 
 /**
  * Request to the Researcher Agent
  */
-export interface ResearcherRequest {
-	topic: string;
-	description?: string;
-	source?: string; // URL
-	campaignId: string;
-	publishDate?: string; // ISO string format
-}
+export const ResearcherRequestSchema = z.object({
+	topic: z.string(),
+	description: z.string().optional(),
+	source: z.string().optional(),
+	campaignId: z.string(),
+	publishDate: z.string().optional(),
+});
+
+export type ResearcherRequest = z.infer<typeof ResearcherRequestSchema>;
 
 /**
  * Request to the Copywriter Agent
  */
-export interface CopywriterRequest {
-	campaignId: string;
-	topic: string;
-	description?: string;
-	publishDate?: string; // ISO string format
-	research?: ResearchResults;
-}
+export const CopywriterRequestSchema = z.object({
+	campaignId: z.string(),
+	topic: z.string(),
+	description: z.string().optional(),
+	publishDate: z.string().optional(),
+	research: ResearchResultsSchema.optional(),
+});
+
+export type CopywriterRequest = z.infer<typeof CopywriterRequestSchema>;
 
 /**
  * Request to the Scheduler Agent
  */
-export interface SchedulerRequest {
-	campaignId: string;
-	content: CampaignContent;
-	publishDate?: string; // ISO string format
-}
+export const SchedulerRequestSchema = z.object({
+	campaignId: z.string(),
+	content: CampaignContentSchema,
+	publishDate: z.string().optional(),
+});
+
+export type SchedulerRequest = z.infer<typeof SchedulerRequestSchema>;
