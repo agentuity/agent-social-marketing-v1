@@ -9,7 +9,7 @@
  */
 export const errorResponse = (error: string) => ({
 	error,
-	status: "error",
+	status: "error" as const,
 });
 
 /**
@@ -19,5 +19,5 @@ export const errorResponse = (error: string) => ({
  */
 export const successResponse = (data: Record<string, unknown>) => ({
 	...data,
-	status: "success",
+	status: "success" as const,
 });

@@ -19,6 +19,7 @@
     "@agentuity/runtime": "latest",
     "@agentuity/schema": "latest",
     "@agentuity/workbench": "latest",
+    "@ai-sdk/anthropic": "^3.0.35",
     "@ai-sdk/groq": "^3.0.21",
     "@ai-sdk/openai": "^3.0.25",
     "date-fns": "^4.1.0",
