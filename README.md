@@ -4,7 +4,7 @@ A v1 port of https://github.com/agentuity/agent-social-marketing.
 
 ## Todo
 
-- [ ] Port Manager
+- [x] Port Manager
 - [ ] Port Scheduler
 - [ ] Port Copywriter
 - [ ] Port KV Utils
