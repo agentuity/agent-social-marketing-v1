@@ -1,10 +1,28 @@
 import { addDays, addWeeks, addMonths, isPast, format } from "date-fns";
-import * as dateFns from "date-fns";
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const parseHumanRelative = require("parse-human-relative-time/date-fns")(
-	dateFns,
-);
+/**
+ * Parse simple natural language relative dates into a Date object.
+ * Supports common phrases like "tomorrow", "next week", "in 3 days", etc.
+ */
+function parseRelativeDate(dateStr: string, now: Date): Date | null {
+	const lower = dateStr.trim().toLowerCase();
+
+	if (lower === "tomorrow") return addDays(now, 1);
+	if (lower === "today") return now;
+	if (lower === "next week") return addWeeks(now, 1);
+	if (lower === "next month") return addMonths(now, 1);
+
+	const inDaysMatch = lower.match(/^in\s+(\d+)\s+days?$/);
+	if (inDaysMatch) return addDays(now, Number.parseInt(inDaysMatch[1]!, 10));
+
+	const inWeeksMatch = lower.match(/^in\s+(\d+)\s+weeks?$/);
+	if (inWeeksMatch) return addWeeks(now, Number.parseInt(inWeeksMatch[1]!, 10));
+
+	const inMonthsMatch = lower.match(/^in\s+(\d+)\s+months?$/);
+	if (inMonthsMatch) return addMonths(now, Number.parseInt(inMonthsMatch[1]!, 10));
+
+	return null;
+}
 
 /**
  * Parse a date string and ensure it's valid
@@ -24,10 +42,11 @@ export function getValidDate(dateStr?: string, ensureFuture = true): string {
 	try {
 		let dateObj: Date;
 
-		try {
-			// Try to parse using the natural language parser
-			dateObj = parseHumanRelative(dateStr, new Date());
-		} catch (parseError) {
+		// Try natural language first, then fall back to Date constructor
+		const relativeResult = parseRelativeDate(dateStr, new Date());
+		if (relativeResult) {
+			dateObj = relativeResult;
+		} else {
 			dateObj = new Date(dateStr);
 		}
 
