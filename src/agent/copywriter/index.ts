@@ -14,10 +14,10 @@ import {
 	type Post,
 	type Thread,
 	CopywriterRequestSchema,
+	CopywriterOutputSchema,
 } from "../../types";
 import schedulerAgent from "../scheduler";
 
-// Zod schema for LinkedIn post generation
 const LinkedInPostSchema = z.object({
 	posts: z.array(
 		z.object({
@@ -27,7 +27,6 @@ const LinkedInPostSchema = z.object({
 	),
 });
 
-// Zod schema for Twitter thread generation
 const TwitterThreadSchema = z.object({
 	threads: z.array(
 		z.object({
@@ -40,24 +39,12 @@ const TwitterThreadSchema = z.object({
 	),
 });
 
-// Types for the generated content
 type LinkedInPostsData = z.infer<typeof LinkedInPostSchema>;
 type TwitterThreadsData = z.infer<typeof TwitterThreadSchema>;
 
-// Constants
 const DEFAULT_LINKEDIN_POSTS_COUNT = 3;
 const DEFAULT_TWITTER_THREADS_COUNT = 2;
 const DEFAULT_TWEETS_PER_THREAD = 3;
-
-const CopywriterOutputSchema = z.discriminatedUnion("status", [
-	z.object({ error: z.string(), status: z.literal("error") }),
-	z.object({
-		campaignId: z.string(),
-		message: z.string(),
-		status: z.literal("success"),
-		schedulerResult: z.any().optional(),
-	}),
-]);
 
 const agent = createAgent("copywriter", {
 	schema: {
