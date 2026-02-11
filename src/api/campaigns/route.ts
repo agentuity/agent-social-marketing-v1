@@ -20,14 +20,19 @@ router.get('/', async (c) => {
 			return c.json({ campaigns: [] });
 		}
 
-		const campaigns = await Promise.all(
+		const results = await Promise.allSettled(
 			campaignIds.map(async (id) => {
 				const res = await c.var.kv.get(CAMPAIGNS_STORE, id);
 				return res?.data ?? null;
 			}),
 		);
 
-		return c.json({ campaigns: campaigns.filter(Boolean) });
+		const campaigns = results
+			.filter((r) => r.status === 'fulfilled')
+			.map((r) => (r as PromiseFulfilledResult<unknown>).value)
+			.filter(Boolean);
+
+		return c.json({ campaigns });
 	} catch (error) {
 		c.var.logger.error('Failed to list campaigns: %s', error);
 		return c.json({ error: 'Failed to list campaigns' }, 500);
@@ -69,12 +74,28 @@ router.delete('/:id', async (c) => {
 			return c.json({ error: 'Campaign not found' }, 404);
 		}
 
-		await c.var.kv.delete(CAMPAIGNS_STORE, id);
+		const maxRetries = 3;
+		let indexUpdated = false;
 
-		const indexResult = await c.var.kv.get(CAMPAIGNS_INDEX_STORE, CAMPAIGNS_INDEX_KEY);
-		const indexData = indexResult.data as unknown as CampaignIndex | undefined;
-		const campaignIds = indexData?.campaignIds?.filter((cid) => cid !== id) || [];
-		await c.var.kv.set(CAMPAIGNS_INDEX_STORE, CAMPAIGNS_INDEX_KEY, { campaignIds });
+		for (let attempt = 0; attempt < maxRetries; attempt++) {
+			try {
+				const indexResult = await c.var.kv.get(CAMPAIGNS_INDEX_STORE, CAMPAIGNS_INDEX_KEY);
+				const indexData = indexResult.data as unknown as CampaignIndex | undefined;
+				const campaignIds = indexData?.campaignIds?.filter((cid) => cid !== id) || [];
+				await c.var.kv.set(CAMPAIGNS_INDEX_STORE, CAMPAIGNS_INDEX_KEY, { campaignIds });
+				indexUpdated = true;
+				break;
+			} catch (err) {
+				c.var.logger.warn('Index update attempt %d failed for campaign %s: %s', attempt + 1, id, err);
+			}
+		}
+
+		if (!indexUpdated) {
+			c.var.logger.error('Failed to update index for campaign %s after %d attempts', id, maxRetries);
+			return c.json({ error: 'Failed to update campaign index' }, 500);
+		}
+
+		await c.var.kv.delete(CAMPAIGNS_STORE, id);
 
 		return c.json({ success: true, message: `Campaign ${id} deleted` });
 	} catch (error) {
