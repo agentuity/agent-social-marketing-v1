@@ -146,3 +146,79 @@ export const SchedulerRequestSchema = z.object({
 });
 
 export type SchedulerRequest = z.infer<typeof SchedulerRequestSchema>;
+
+/**
+ * Campaign handoff payload from Manager to Copywriter
+ */
+export const CampaignHandoffSchema = z.object({
+	topic: z.string(),
+	description: z.string().nullable(),
+	campaignId: z.string(),
+	publishDate: z.string().nullable(),
+	source: z.string().nullable(),
+});
+
+export type CampaignHandoff = z.infer<typeof CampaignHandoffSchema>;
+
+/**
+ * Serialized campaign summary (used in existing campaigns response)
+ */
+export const CampaignSummarySchema = z.object({
+	id: z.string(),
+	topic: z.string(),
+	description: z.string().nullable(),
+	status: CampaignStatusSchema,
+	createdAt: z.string(),
+	updatedAt: z.string(),
+});
+
+export type CampaignSummary = z.infer<typeof CampaignSummarySchema>;
+
+/**
+ * Manager Agent output
+ */
+export const ManagerOutputSchema = z.discriminatedUnion("status", [
+	z.object({ error: z.string(), status: z.literal("error") }),
+	z.object({
+		existingCampaigns: z.array(CampaignSummarySchema),
+		message: z.string(),
+		status: z.literal("existing_found"),
+	}),
+	z.object({
+		message: z.string(),
+		status: z.literal("handoff"),
+		campaign: CampaignHandoffSchema,
+	}),
+]);
+
+export type ManagerOutput = z.infer<typeof ManagerOutputSchema>;
+
+/**
+ * Scheduler Agent output
+ */
+export const SchedulerOutputSchema = z.discriminatedUnion("status", [
+	z.object({ error: z.string(), status: z.literal("error") }),
+	z.object({
+		campaignId: z.string(),
+		scheduledPosts: z.number(),
+		message: z.string(),
+		status: z.literal("success"),
+	}),
+]);
+
+export type SchedulerOutput = z.infer<typeof SchedulerOutputSchema>;
+
+/**
+ * Copywriter Agent output
+ */
+export const CopywriterOutputSchema = z.discriminatedUnion("status", [
+	z.object({ error: z.string(), status: z.literal("error") }),
+	z.object({
+		campaignId: z.string(),
+		message: z.string(),
+		status: z.literal("success"),
+		schedulerResult: SchedulerOutputSchema.optional(),
+	}),
+]);
+
+export type CopywriterOutput = z.infer<typeof CopywriterOutputSchema>;

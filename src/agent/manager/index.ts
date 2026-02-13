@@ -1,8 +1,7 @@
 import { createAgent } from '@agentuity/runtime';
 import { generateText, Output } from 'ai';
-import { type ManagerRequest, ManagerRequestSchema } from '../../types';
+import { type ManagerRequest, ManagerRequestSchema, ManagerOutputSchema } from '../../types';
 import { groq } from '@ai-sdk/groq';
-import { s } from '@agentuity/schema';
 import { z } from 'zod';
 import {
   createCampaign,
@@ -14,13 +13,7 @@ import type { Campaign } from '../../types';
 const agent = createAgent('chat', {
   schema: {
     input: ManagerRequestSchema,
-    // TODO - convert this to a type.
-    output: s.object({
-      existingCampaigns: s.array(s.any()).optional(),
-      message: s.string().optional(),
-      status: s.string().optional(),
-      campaign: s.any().optional(),
-    }),
+    output: ManagerOutputSchema,
   },
   handler: async (ctx, input) => {
     // Validate request has a topic

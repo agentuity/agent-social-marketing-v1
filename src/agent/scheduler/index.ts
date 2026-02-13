@@ -1,43 +1,25 @@
-// import type { AgentRequest, AgentResponse, AgentContext } from "@agentuity/sdk";
 import {
 	getCampaign,
 	updateCampaignStatus,
 	saveCampaign,
 } from "../../utils/kv-store";
-import { s } from '@agentuity/schema';
-import {z} from 'zod'
 import { getValidDate, incrementDateByDays } from "../../utils/date-utils";
-
 import {
 	type Campaign,
 	type Post,
 	type Thread,
 	type SchedulingInfo,
-    SchedulerRequestSchema,
+	SchedulerRequestSchema,
+	SchedulerOutputSchema,
 } from "../../types";
 import { createAgent, type AgentContext, type AppState } from "@agentuity/runtime";
 
-
-
-// Typefully API settings
 const TYPEFULLY_API_URL = "https://api.typefully.com/v1";
 
-
-const SchedulerOutputSchema = z.discriminatedUnion("status", [
-	z.object({ error: z.string(), status: z.literal("error") }),
-	z.object({
-		campaignId: z.string(),
-		scheduledPosts: z.number(),
-		message: z.string(),
-		status: z.literal("success"),
-	}),
-]);
-
 const agent = createAgent('scheduler', {
-	schema:
-	{
+	schema: {
 		input: SchedulerRequestSchema,
-		output: SchedulerOutputSchema
+		output: SchedulerOutputSchema,
 	},
 	handler: async (ctx, input) => {
 		try {
@@ -67,7 +49,7 @@ const agent = createAgent('scheduler', {
 			// Verify API key is available
 			const apiKey = process.env.TYPEFULLY_API_KEY;
 
-			ctx.logger.debug("Scheduler: API Key: %s", apiKey);
+			ctx.logger.debug("Scheduler: API Key present: %s", !!apiKey);
 
 			if (!apiKey) {
 				return { error: "Missing TYPEFULLY_API_KEY in environment variables", status: "error" as const };
