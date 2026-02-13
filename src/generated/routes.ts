@@ -53,6 +53,24 @@ declare module '@agentuity/frontend' {
 	 * Maps route keys (METHOD /path) to their input/output schemas
 	 */
 	export interface RouteRegistry {
+	'GET /api/campaigns': {
+				inputSchema: never;
+				outputSchema: never;
+				stream: false;
+				params: never;
+			};
+	'GET /api/campaigns/:id': {
+				inputSchema: never;
+				outputSchema: never;
+				stream: false;
+				params: { id: string };
+			};
+	'DELETE /api/campaigns/:id': {
+				inputSchema: never;
+				outputSchema: never;
+				stream: false;
+				params: { id: string };
+			};
 	'POST /api/chat': {
 				inputSchema: POSTApiChatInputSchema;
 				outputSchema: POSTApiChatOutputSchema;
@@ -86,6 +104,22 @@ declare module '@agentuity/frontend' {
 	 * Used by createClient() from @agentuity/frontend for type-safe RPC calls.
 	 */
 	export interface RPCRouteRegistry {
+		campaigns: {
+			/**
+			 * Route: GET /api/campaigns
+			 */
+			get: { input: never; output: never; type: 'api'; params: never; paramsTuple: [] };
+			id: {
+				/**
+				 * Route: DELETE /api/campaigns/:id
+				 */
+				delete: { input: never; output: never; type: 'api'; params: { id: string }; paramsTuple: [string] };
+				/**
+				 * Route: GET /api/campaigns/:id
+				 */
+				get: { input: never; output: never; type: 'api'; params: { id: string }; paramsTuple: [string] };
+			};
+		};
 		chat: {
 			/**
 			 * Route: POST /api/chat
@@ -99,6 +133,24 @@ declare module '@agentuity/frontend' {
 // that define RouteRegistry locally instead of re-exporting from @agentuity/frontend
 declare module '@agentuity/react' {
 	export interface RouteRegistry {
+	'GET /api/campaigns': {
+				inputSchema: never;
+				outputSchema: never;
+				stream: false;
+				params: never;
+			};
+	'GET /api/campaigns/:id': {
+				inputSchema: never;
+				outputSchema: never;
+				stream: false;
+				params: { id: string };
+			};
+	'DELETE /api/campaigns/:id': {
+				inputSchema: never;
+				outputSchema: never;
+				stream: false;
+				params: { id: string };
+			};
 	'POST /api/chat': {
 				inputSchema: POSTApiChatInputSchema;
 				outputSchema: POSTApiChatOutputSchema;
@@ -113,6 +165,22 @@ declare module '@agentuity/react' {
 
 	}
 	export interface RPCRouteRegistry {
+		campaigns: {
+			/**
+			 * Route: GET /api/campaigns
+			 */
+			get: { input: never; output: never; type: 'api'; params: never; paramsTuple: [] };
+			id: {
+				/**
+				 * Route: DELETE /api/campaigns/:id
+				 */
+				delete: { input: never; output: never; type: 'api'; params: { id: string }; paramsTuple: [string] };
+				/**
+				 * Route: GET /api/campaigns/:id
+				 */
+				get: { input: never; output: never; type: 'api'; params: { id: string }; paramsTuple: [string] };
+			};
+		};
 		chat: {
 			/**
 			 * Route: POST /api/chat
@@ -128,6 +196,28 @@ declare module '@agentuity/react' {
  * @internal
  */
 const _rpcRouteMetadata = {
+		"campaigns": {
+				"get": {
+						"type": "api",
+						"path": "/api/campaigns"
+				},
+				"id": {
+						"delete": {
+								"type": "api",
+								"path": "/api/campaigns/:id",
+								"pathParams": [
+										"id"
+								]
+						},
+						"get": {
+								"type": "api",
+								"path": "/api/campaigns/:id",
+								"pathParams": [
+										"id"
+								]
+						}
+				}
+		},
 		"chat": {
 				"post": {
 						"type": "api",
