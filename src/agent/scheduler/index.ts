@@ -49,7 +49,7 @@ const agent = createAgent('scheduler', {
 			// Verify API key is available
 			const apiKey = process.env.TYPEFULLY_API_KEY;
 
-			ctx.logger.debug("Scheduler: API Key: %s", apiKey);
+			ctx.logger.debug("Scheduler: API Key present: %s", !!apiKey);
 
 			if (!apiKey) {
 				return { error: "Missing TYPEFULLY_API_KEY in environment variables", status: "error" as const };
